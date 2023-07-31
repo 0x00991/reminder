@@ -166,10 +166,44 @@ def killp():
     except Exception as e:
         print(f"오류가 발생했습니다: {e}")
 
+def remove():
+    alerts = os.listdir(ALERT_DIR)
+    if not alerts:
+        print("현재 예정된 알림이 없습니다.")
+        return
+    aldic = {}
+    for a, i in zip(alerts, range(1, len(alerts)+1)):
+        if not is_numeric(a): continue
+        
+        with open(ALERT_DIR+f"/{a}", "rb") as f:
+            c = f.read().decode("utf-8")
+        t = datetime.datetime.fromtimestamp(int(a))
+        
+        yyyymmdd = f"{t.year}{df(t.month)}{df(t.day)}"
+        hhmmss = f"{df(t.hour)}:{df(t.minute)}:{df(t.second)}"
+        
+        print(f"[{i}] - {yyyymmdd} {hhmmss}: {c}")
+        aldic[str(i)] = a
+    print("")
+    removes = input("삭제할 알림 번호를 띄어쓰기로 나눠 입력해주세요. >")
+    
+    removed = []
+    for i in removes.split(" "):
+        if i == "": continue
+        if i in removed: continue
+        if i not in aldic.keys():
+            print(f"{i}: 알 수 없는 번호입니다.")
+            continue
+        os.remove(ALERT_DIR+f"/{aldic[i]}")
+        removed.append(i)
+        print(f"{i}번 알림이 삭제되었습니다.")
+
+        
+        
 while True:
     if not rp_started():
         print("주의: 리마인더 프로세스가 감지되지 않았습니다. 알림이 표시되지 않을 수 있습니다.")
-    print("(1) 알림 생성\n(2) 예정된 알림 목록\n(3) 리마인더 비활성화\n(4) 프로그램 종료")
+    print("(1) 알림 생성\n(2) 예정된 알림 목록\n(3) 알림 삭제\n(4) 리마인더 비활성화\n(5) 프로그램 종료")
     inp = input(">")
     [print("") for i in range(3)]
     if inp == "1":
@@ -177,8 +211,10 @@ while True:
     elif inp == "2":
         list()
     elif inp == "3":
-        killp()
+        remove()
     elif inp == "4":
+        killp()
+    elif inp == "5":
         break
     else:
         print("알 수 없는 옵션입니다.")
